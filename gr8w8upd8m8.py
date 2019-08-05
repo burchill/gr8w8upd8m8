@@ -39,11 +39,11 @@ class EventProcessor:
         self.done = False
         self._events = []
 
-	# Uh,  takes in an "event", and if it weighs > 30kg, adds it to a list of weights, and if there's at least
-	#	one value, switches to being "measured".
-	# Seems like it would only get one weight?
+    # Uh,  takes in an "event", and if it weighs > 30kg, adds it to a list of weights, and if there's at least
+    #    one value, switches to being "measured".
+    # Seems like it would only get one weight?
     def mass(self, event):
-    	print("weight being pinged")
+        print("weight being pinged")
         if event.totalWeight > 30:
             self._events.append(event.totalWeight)
             if not self._measured:
@@ -54,8 +54,8 @@ class EventProcessor:
 
     @property
     def weight(self):
-    	print("Total list of weights?")
-    	print(self._events)
+        print("Total list of weights?")
+        print(self._events)
         if not self._events:
             return 0
         histogram = collections.Counter(round(num, 1) for num in self._events)
@@ -77,7 +77,7 @@ class BoardEvent:
 
 
 class Wiiboard:
-	# sets all the default values and attempts to start up bluetooth
+    # sets all the default values and attempts to start up bluetooth
     def __init__(self, processor):
         # Sockets and status
         self.receivesocket = None
@@ -91,7 +91,7 @@ class Wiiboard:
         self.buttonDown = False
         
         # ??? Seems like this makes the calibration values super high so nothing goes through
-        #		unless it's already calibrated
+        #        unless it's already calibrated
         for i in xrange(3):
             self.calibration.append([])
             for j in xrange(4):
@@ -129,10 +129,10 @@ class Wiiboard:
         else:
             print "Could not connect to Wiiboard at address " + address
 
-	# If it's connected and hasn't gotten a single weight yet,
-	# 	it waits to get values from the board. If it gets `INPUT_READ_DATA`, and it hasn't calibrated yet
-	#	it calibrates. If it gets `EXTENSION_8BYTES`, it gets the weight data and gives it to the processor.
-	# Then it disconnects everything
+    # If it's connected and hasn't gotten a single weight yet,
+    #     it waits to get values from the board. If it gets `INPUT_READ_DATA`, and it hasn't calibrated yet
+    #    it calibrates. If it gets `EXTENSION_8BYTES`, it gets the weight data and gives it to the processor.
+    # Then it disconnects everything
     def receive(self):
         #try:
         #   self.receivesocket.settimeout(0.1)       #not for windows?
@@ -157,7 +157,7 @@ class Wiiboard:
         self.status = "Disconnected"
         self.disconnect()
 
-	# Tries to disconnect
+    # Tries to disconnect
     def disconnect(self):
         if self.status == "Connected":
             self.status = "Disconnecting"
@@ -186,11 +186,11 @@ class Wiiboard:
             print "No Wiiboards discovered."
         return address
 
-	
-	# ??? Looks like it gets the data from the board, and somehow uses that to tell if the "button" is down or not?
-	#	If the button isn't "pressed", it's released?
-	# then it looks like gets the values for each weight sensor, uses their calibrated values to get their weights,
-	#	then wraps all these values and returns them
+    
+    # ??? Looks like it gets the data from the board, and somehow uses that to tell if the "button" is down or not?
+    #    If the button isn't "pressed", it's released?
+    # then it looks like gets the values for each weight sensor, uses their calibrated values to get their weights,
+    #    then wraps all these values and returns them
     def createBoardEvent(self, bytes):
         buttonBytes = bytes[0:2]
         bytes = bytes[2:12]
@@ -205,7 +205,7 @@ class Wiiboard:
                 self.buttonDown = True
 
         if not buttonPressed:
-        	print "button not pressed right now?"
+            print "button not pressed right now?"
             if self.lastEvent.buttonPressed:
                 buttonReleased = True
                 self.buttonDown = False
@@ -223,8 +223,8 @@ class Wiiboard:
         boardEvent = BoardEvent(topLeft, topRight, bottomLeft, bottomRight, buttonPressed, buttonReleased)
         return boardEvent
 
-	# Uses a weird, tiered system of calibration for each weight sensor.
-	# Looks like this is a weird wii-internal thing that actually makes sense
+    # Uses a weird, tiered system of calibration for each weight sensor.
+    # Looks like this is a weird wii-internal thing that actually makes sense
     def calcMass(self, raw, pos):
         val = 0.0
         #calibration[0] is calibration values for 0kg
@@ -239,15 +239,15 @@ class Wiiboard:
 
         return val
 
-	# Unused
+    # Unused
     def getEvent(self):
         return self.lastEvent
 
-	# Unused
+    # Unused
     def getLED(self):
         return self.LED
 
-	# Turns the calibration data that the wii board gives into a format that is stored on the board
+    # Turns the calibration data that the wii board gives into a format that is stored on the board
     def parseCalibrationResponse(self, bytes):
         index = 0
         if len(bytes) == 16:
@@ -286,18 +286,18 @@ class Wiiboard:
         self.send(message)
         self.LED = light
 
-	# I think this just essentially asks for calibration data
+    # I think this just essentially asks for calibration data
     def calibrate(self):
         message = ["00", COMMAND_READ_REGISTER, "04", "A4", "00", "24", "00", "18"]
         self.send(message)
         self.calibrationRequested = True
 
-	# ???
+    # ???
     def setReportingType(self):
         bytearr = ["00", COMMAND_REPORTING, CONTINUOUS_REPORTING, EXTENSION_8BYTES]
         self.send(bytearr)
 
-	# Waits for a certain number of milliseconds
+    # Waits for a certain number of milliseconds
     def wait(self, millis):
         time.sleep(millis / 1000.0)
 
